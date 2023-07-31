@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "mini_wallet"
+version = "0.1.0"
+description = "mini wallet exercise for JULO interview"
+authors = ["Yohan Prasetia Siswanto <yohan.siswanto@akseleran.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Flask = "^2.3.2"
+flask-marshmallow = "^0.15.0"
+flask-migrate = "^4.0.4"
+flask-restful = "^0.3.10"
+marshmallow-sqlalchemy = "^0.29.0"
+marshmallow-enum = "^1.5.1"
+uwsgi = "^2.0.22"
+python-dotenv = "^1.0.0"
+psycopg2-binary = "^2.9.6"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
