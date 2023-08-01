@@ -5,7 +5,8 @@ from mini_wallet import db
 from mini_wallet.enumerations.wallet import WalletStatus
 from mini_wallet.models.customer_token import CustomerToken
 from mini_wallet.models.wallet import Wallet
-from mini_wallet.tools.responses import created_message
+from mini_wallet.schemas.wallet import WalletModelSchema
+from mini_wallet.tools.responses import bad_request_message, created_message
 from mini_wallet.tools.token import create_user_token
 
 
@@ -63,7 +64,21 @@ class WalletController:
         # return new token and status
         return created_message(data={"token": user_token})
     
-    
+    def enable_wallet(self, customer_xid):
+        # check if wallet for the customer already exist
+        existing_wallet = Wallet.base_query().filter(Wallet.owned_by==customer_xid).first()
+        if not existing_wallet:
+            return bad_request_message(error="wallet not exist")
+        
+        if existing_wallet.status == WalletStatus.enabled:
+            return bad_request_message(error="Already enabled")
+        
+        existing_wallet.status = WalletStatus.enabled
+        existing_wallet.enabled_at = datetime.utcnow()
+        existing_wallet.save()
+
+        return created_message(data={"wallet": WalletModelSchema().dump(existing_wallet)})
+        
 
 
 

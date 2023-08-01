@@ -49,21 +49,16 @@ def created_message(status: str = None, data: dict = {}) -> Tuple[int, dict]:
     )
 
 
-def bad_request_message(message: str = None, field_name: str = "message") -> Tuple[int, dict]:
-    errors_dict = dict()
-    errors_dict[field_name] = [message]
-
+def bad_request_message(status: str = None, error: str = "bad request") -> Tuple[int, dict]:
+    
     return (
         400,       
-        BaseErrorResponseSchema().dump(dict(code=400, message="Bad request", errors=errors_dict)),
+        dict(           
+            status=status if status else "fail",
+            data=dict(error=error)
+        )    
     )
 
-
-def bad_request_custom_message(message: str = None) -> Tuple[int, dict]:
-    return (
-        400,
-        BaseErrorResponseSchema().dump(dict(code=400, message=message)),
-    )
 
 
 def not_found_response(message: str = None) -> Tuple[int, dict]:

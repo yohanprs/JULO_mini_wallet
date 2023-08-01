@@ -1,75 +1,58 @@
+from datetime import datetime
 import functools
 from functools import wraps
 from typing import Any
+from mini_wallet import unauthorized
 from mini_wallet.enumerations.commons import EncodingType, SchemaMethod
 from flask import current_app, g, request
 from marshmallow import ValidationError
+from mini_wallet.models.customer_token import CustomerToken
 from mini_wallet.schemas.commons import BaseErrorResponseSchema
 
 from mini_wallet.tools.responses import make_json_response
 
+def login_required():  # noqa
+    def decorator_login_required(func: Any):
+        @wraps(func)
+        def wrap(*args, **kwargs):            
+            if request.headers.get("Authorization") is None:
+                return unauthorized("Invalid token")
+            
+            auth_token = None
+            
+            allowed_auth_type = ["bearer", "jwt", "token"]
+            auth_header = request.headers.get("Authorization", request.headers.get("authorization"))
+            auth_type, auth_token = (
+                auth_header.split() if auth_header is not None else (None, None)
+            )
+            if not all([auth_type, auth_token]) or auth_type.lower() not in allowed_auth_type:
+                return unauthorized("Invalid token")            
+            
+            if not auth_token:
+                return unauthorized("Invalid token")
+            
+            current_time = datetime.utcnow()
+            existing_token = CustomerToken.base_query().filter(
+                CustomerToken.token==auth_token, 
+                CustomerToken.is_active==True, 
+                CustomerToken.expires > current_time
+            ).first()
 
-# def login_required(_func=None, *, permissions=[], token_types=[]):  # noqa
-#     def decorator_login_required(func):
-#         @wraps(func)
-#         def wrap(*args, **kwargs):
-#             auth_resource = AuthResource(
-#                 base_url=current_app.config.get("AUTH_ENGINE_URL"),
-#                 auth_token=None,
-#             )
-#             if request.headers.get("Authorization") is None:
-#                 return unauthorized(errors=dict(token="Invalid token"))
-#             try:
-#                 auth_token = None
-#                 token_result = split_token(request.headers)
-#                 if token_result.status_code == 200:
-#                     auth_token = token_result.data
-#                 else:
-#                     return unauthorized(errors=dict(token="Invalid token"))
+            if not existing_token:
+                return unauthorized("Invalid token")
+            
+            g.customer_xid = existing_token.customer_xid
 
-#                 (
-#                     validation_status,
-#                     validation_result,
-#                 ) = auth_resource.validate_general_token(
-#                     auth_token=auth_token,
-#                     token_types=token_types,
-#                     return_permission=True,
-#                 )
-#             except (TypeError, UnicodeDecodeError, ValueError):
-#                 return unauthorized(errors=dict(token="Invalid token"))
+            return func(*args, **kwargs)
 
-#             if validation_status == 200:
-#                 validation_data = validation_result.get("data", {})
-#                 user_permissions = validation_data.get("permissions")
-
-#                 if not validation_data.get("token_type") == "SERVER":
-#                     for permission in permissions:
-#                         if permission not in user_permissions:
-#                             return unauthorized(errors=dict(token="Access forbidden"))
-
-#                 token_type = validation_data.get("token_type")
-#                 if token_type == "ADMIN":
-#                     g.admin_id = int(validation_data.get("user_id"))
-#                 elif token_type == "USER":
-#                     g.user_id = int(validation_data.get("user_id"))
-#                 elif token_type == "PARTNER":
-#                     g.partner_id = int(validation_data.get("partner_id"))
-
-#                 return func(*args, **kwargs)
-
-#             return unauthorized(errors=dict(token="Invalid token"))
-
-#         return wrap
-
-#     if _func is None:
-#         return decorator_login_required
-#     else:
-#         return decorator_login_required(_func)
+        return wrap
+   
+    return decorator_login_required
 
 
 def validate_input(schema_method: SchemaMethod, schema, encoding_type):
     def _decorate(func: Any):
-        @functools.wraps(func)
+        @wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 data = None
