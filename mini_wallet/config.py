@@ -31,3 +31,7 @@ class Config:
 
     # App Configuration
     DATETIME_FORMAT = env.string("DATETIME_FORMAT", "%A, %d %B %Y %H:%M:%S")
+
+    # token config
+    TOKEN_EXPIRE = env.int("TOKEN_EXPIRE", 24)
+    SECRET_TOKEN = env.string("SECRET_TOKEN", "test-secret")
