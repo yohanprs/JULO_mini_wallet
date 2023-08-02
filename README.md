@@ -85,4 +85,4 @@ Database uses postgreSQL
      ``` shell script
     flask run -p 8118 --with-threads
 
-    or by using "run and debug" function if you are using visual studio code
+4. or by using "run and debug" function if you are using visual studio code
