@@ -7,11 +7,25 @@ from mini_wallet.enumerations.transaction import TransactionStatus, TransactionT
 from mini_wallet.enumerations.wallet import WalletStatus
 from mini_wallet.models.transaction import Transaction
 from mini_wallet.models.wallet import Wallet
-from mini_wallet.schemas.transactions import DepositTransactionModelSchema, WithdrawalTransactionModelSchema
-from mini_wallet.tools.responses import bad_request_message, created_message, not_found_response
+from mini_wallet.schemas.transactions import DepositTransactionModelSchema, TransactionModelSchema, WithdrawalTransactionModelSchema
+from mini_wallet.tools.responses import bad_request_message, created_message, not_found_response, ok_message
 
 
 class TransactionController:
+
+    def get_transactions_list(self, customer_xid, offset=0, limit=100):
+
+        trans_query = Transaction.base_query().join(Transaction.wallet).filter(Wallet.owned_by==customer_xid).order_by(Transaction.transacted_at)
+        if offset:
+            trans_query = trans_query.offset(offset)
+        if limit:
+            trans_query = trans_query.limit(limit)
+
+        transaction_list = trans_query.all()
+
+        return ok_message(data={"transactions": TransactionModelSchema().dump(transaction_list, many=True)})
+
+
 
     def get_wallet_by_customer_xid(self, customer_xid):
         existing_wallet = Wallet.base_query().filter(Wallet.owned_by==customer_xid).first()

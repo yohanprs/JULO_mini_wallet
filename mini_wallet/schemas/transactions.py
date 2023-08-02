@@ -4,6 +4,10 @@ from marshmallow import Schema, fields, EXCLUDE
 from mini_wallet.models.transaction import Transaction
 from mini_wallet.schemas.commons import EnumNameOnly
 
+class GetTransactionListSchema(Schema):
+    offset = fields.Integer(required=False)
+    limit = fields.Integer(required=False)
+
 class TransactionsDepositSchema(Schema):
     amount = fields.Integer(as_string=True, required=True)
     reference_id = fields.UUID(required=True)
@@ -18,6 +22,21 @@ class TransactionsWithdrawalSchema(Schema):
 
     class Meta:
         unknown = EXCLUDE
+
+
+class TransactionModelSchema(ma.SQLAlchemyAutoSchema):
+    id = fields.UUID()
+    status = EnumNameOnly(attribute="status")
+    transacted_at = fields.DateTime()
+    type = EnumNameOnly(attribute="type")
+    amount = fields.Integer()
+    reference_id = fields.UUID()
+
+    class Meta:
+        model = Transaction
+        exclude = ("is_deleted", "deleted_at", "created_at", "updated_at",)
+        ordered = True
+
 
 class DepositTransactionModelSchema(ma.SQLAlchemyAutoSchema):
     id = fields.UUID()
