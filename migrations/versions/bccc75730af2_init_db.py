@@ -1,8 +1,8 @@
 """init db
 
-Revision ID: 94fdb9998ac6
+Revision ID: bccc75730af2
 Revises: 
-Create Date: 2023-08-01 21:30:29.673587
+Create Date: 2023-08-02 10:09:26.760940
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '94fdb9998ac6'
+revision = 'bccc75730af2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -56,7 +56,8 @@ def upgrade():
     sa.Column('is_deleted', sa.Boolean(), server_default='false', nullable=True),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['wallet_id'], ['wallet.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('reference_id')
     )
     # ### end Alembic commands ###
 

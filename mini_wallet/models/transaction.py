@@ -13,7 +13,7 @@ class Transaction(BaseModel):
     transacted_at = sa.Column(sa.DateTime(), nullable=False)
     type = sa.Column(sa.Enum(TransactionType, name="transaction_type"), nullable=False)
     amount = sa.Column(sa.Integer())
-    reference_id = sa.Column(sa.String(36))
+    reference_id = sa.Column(sa.String(36), unique=True)
     wallet = relationship("Wallet", back_populates="transactions")
 
     @hybrid_property
