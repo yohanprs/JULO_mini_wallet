@@ -5,8 +5,8 @@ from mini_wallet import db
 from mini_wallet.enumerations.wallet import WalletStatus
 from mini_wallet.models.customer_token import CustomerToken
 from mini_wallet.models.wallet import Wallet
-from mini_wallet.schemas.wallet import WalletModelSchema
-from mini_wallet.tools.responses import bad_request_message, created_message
+from mini_wallet.schemas.wallet import WalletDisabledModelSchema, WalletModelSchema
+from mini_wallet.tools.responses import bad_request_message, created_message, not_found_response, ok_message
 from mini_wallet.tools.token import create_user_token
 
 
@@ -31,7 +31,7 @@ class WalletController:
         user_token = ""
         with db.session.begin():
             # check if wallet for the customer already exist
-            existing_wallet = Wallet.base_query().filter(Wallet.owned_by==customer_xid).first()
+            existing_wallet = self.get_by_customer_xid(customer_xid)
 
             # if not create one
             if not existing_wallet:
@@ -63,10 +63,14 @@ class WalletController:
 
         # return new token and status
         return created_message(data={"token": user_token})
+
+    def get_by_customer_xid(self, customer_xid):
+        existing_wallet = Wallet.base_query().filter(Wallet.owned_by==customer_xid).first()
+        return existing_wallet
     
     def enable_wallet(self, customer_xid):
         # check if wallet for the customer already exist
-        existing_wallet = Wallet.base_query().filter(Wallet.owned_by==customer_xid).first()
+        existing_wallet = self.get_by_customer_xid(customer_xid)
         if not existing_wallet:
             return bad_request_message(error="wallet not exist")
         
@@ -74,10 +78,43 @@ class WalletController:
             return bad_request_message(error="Already enabled")
         
         existing_wallet.status = WalletStatus.enabled
-        existing_wallet.enabled_at = datetime.utcnow()
+        existing_wallet.status_change_at = datetime.utcnow()
         existing_wallet.save()
 
         return created_message(data={"wallet": WalletModelSchema().dump(existing_wallet)})
+    
+    def view_wallet(self, customer_xid):
+        # check if wallet for the customer already exist
+        existing_wallet = self.get_by_customer_xid(customer_xid)
+        if not existing_wallet:
+            return bad_request_message(error="wallet not exist")
+        
+        if existing_wallet.status == WalletStatus.disabled:
+            return not_found_response(error="Wallet disabled")
+        
+        return ok_message(data={"wallet": WalletModelSchema().dump(existing_wallet)})
+    
+    def disable_wallet(self, customer_xid, is_disabled):
+        if not is_disabled:
+            return bad_request_message(error="is_disabled is not valid")
+
+        existing_wallet = self.get_by_customer_xid(customer_xid)
+        if not existing_wallet:
+            return bad_request_message(error="wallet not exist")
+        
+        if existing_wallet.status == WalletStatus.disabled:
+            return bad_request_message(error="Already disabled")
+        
+        existing_wallet.status = WalletStatus.disabled
+        existing_wallet.status_change_at = datetime.utcnow()
+        existing_wallet.save()
+
+        return ok_message(data={"wallet": WalletDisabledModelSchema().dump(existing_wallet)})
+        
+
+
+        
+
         
 
 

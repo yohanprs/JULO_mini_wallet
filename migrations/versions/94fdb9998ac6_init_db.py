@@ -34,7 +34,7 @@ def upgrade():
     sa.Column('owned_by', sa.String(length=36), nullable=False),
     sa.Column('balance', sa.Integer(), nullable=True),
     sa.Column('status', sa.Enum('enabled', 'disabled', name='wallet_status'), nullable=True),
-    sa.Column('enabled_at', sa.DateTime(), nullable=True),
+    sa.Column('status_change_at', sa.DateTime(), nullable=True),
     sa.Column('id', sa.String(length=36), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"), nullable=False),

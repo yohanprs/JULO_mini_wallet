@@ -32,10 +32,13 @@ def default_response(status_code: int, response_data):
     pass
 
 
-def ok_message(message: str = None, data: dict = {}) -> Tuple[int, dict]:
+def ok_message(status: str = None, data: dict = {}) -> Tuple[int, dict]:
     return (
         200,
-        DefaultResponseSchema().dump(dict(code=200, message=message if message else "Ok", data=data)),
+        dict(           
+            status=status if status else "success",
+            data=data,
+        )
     )   
 
 
@@ -61,16 +64,13 @@ def bad_request_message(status: str = None, error: str = "bad request") -> Tuple
 
 
 
-def not_found_response(message: str = None) -> Tuple[int, dict]:
+def not_found_response(status: str = None, error: str = "not found") -> Tuple[int, dict]:
     return (
         404,
-        BaseErrorResponseSchema().dump(
-            dict(
-                code=404,
-                message="Not found",
-                errors=dict(message=message),
-            )
-        ),
+        dict(           
+            status=status if status else "fail",
+            data=dict(error=error)
+        )
     )
 
 

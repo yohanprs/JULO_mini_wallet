@@ -11,5 +11,5 @@ class Wallet(BaseModel):
     owned_by = sa.Column(sa.String(36), nullable=False, unique=True)
     balance = sa.Column(sa.Integer())
     status = sa.Column(sa.Enum(WalletStatus, name="wallet_status"))
-    enabled_at = sa.Column(sa.DateTime(), nullable=True)
+    status_change_at = sa.Column(sa.DateTime(), nullable=True)
     transactions = relationship("Transaction", uselist=True, back_populates="wallet")
