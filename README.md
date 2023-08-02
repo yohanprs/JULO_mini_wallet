@@ -1,7 +1,7 @@
 # JULO_mini_wallet
 mini wallet exercise for JULO interview
 
-This Project was developed using Python 3.10.9 in Ubuntu 22.04.2 LTS
+This Project was developed using Python 3.10.9 in Ubuntu 22.04.2 LTS.
 Database uses postgreSQL
 
 #### How to install and run in local
