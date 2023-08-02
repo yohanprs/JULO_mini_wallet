@@ -28,7 +28,7 @@ class BaseModel(db.Model):
 
     __abstract__ = True
    
-    id = sa.Column(sa.String(36), primary_key=True, default=str(uuid.uuid4()))
+    id = sa.Column(sa.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     created_at = sa.Column(
         sa.DateTime(),
         default=datetime.utcnow,
